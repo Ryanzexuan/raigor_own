@@ -1,0 +1,2 @@
+raigor_4RL/raigor/raigor_bringup:raigor_4RL/raigor/raigor_description:raigor_4RL/raigor/raigor_gazebo:raigor_4RL/raigor_control/gazebo_continuous_track:raigor_4RL/raigor_control/raigor_pid_control:raigor_4RL/raigor_control/teleop_twist_keyboard
+-DCATKIN_DEVEL_PREFIX=/home/ryan/raigor_ws/devel -DCMAKE_INSTALL_PREFIX=/home/ryan/raigor_ws/install -G Unix Makefiles

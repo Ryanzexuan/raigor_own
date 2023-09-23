@@ -1,0 +1,8 @@
+prefix=/home/ryan/raigor_ws/install
+
+Name: raigor_bringup
+Description: Description of raigor_bringup
+Version: 0.0.0
+Cflags: 
+Libs: -L${prefix}/lib 
+Requires: 

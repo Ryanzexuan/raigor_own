@@ -1,0 +1,8 @@
+prefix=/home/ryan/raigor_ws/install
+
+Name: raigor_pid_control
+Description: Description of raigor_pid_control
+Version: 0.0.0
+Cflags: -I${prefix}/include
+Libs: -L${prefix}/lib 
+Requires: 

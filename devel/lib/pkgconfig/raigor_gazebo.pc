@@ -1,0 +1,8 @@
+prefix=/home/ryan/raigor_ws/devel
+
+Name: raigor_gazebo
+Description: Description of raigor_gazebo
+Version: 0.0.0
+Cflags: 
+Libs: -L${prefix}/lib 
+Requires: 

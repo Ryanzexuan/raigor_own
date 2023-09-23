@@ -1,0 +1,8 @@
+prefix=/home/ryan/raigor_ws/install
+
+Name: raigor_general_perception
+Description: Description of raigor_general_perception
+Version: 0.0.0
+Cflags: -I${prefix}/include
+Libs: -L${prefix}/lib -lgazebo_ros_harness
+Requires: 

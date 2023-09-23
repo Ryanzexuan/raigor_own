@@ -1,0 +1,8 @@
+prefix=/home/ryan/raigor_ws/install
+
+Name: raigor_moveit_config
+Description: Description of raigor_moveit_config
+Version: 0.3.0
+Cflags: 
+Libs: -L${prefix}/lib 
+Requires: 

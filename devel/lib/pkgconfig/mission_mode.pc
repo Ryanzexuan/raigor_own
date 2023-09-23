@@ -1,0 +1,8 @@
+prefix=/home/ryan/raigor_ws/devel
+
+Name: mission_mode
+Description: Description of mission_mode
+Version: 0.0.0
+Cflags: -I/home/ryan/raigor_ws/devel/include
+Libs: -L${prefix}/lib 
+Requires: message_runtime

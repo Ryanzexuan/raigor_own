@@ -1,0 +1,8 @@
+prefix=/home/ryan/raigor_ws/devel
+
+Name: gazebo_continuous_track
+Description: Description of gazebo_continuous_track
+Version: 0.0.4
+Cflags: -I/home/ryan/raigor_ws/src/raigor_4RL/raigor_control/gazebo_continuous_track/include
+Libs: -L${prefix}/lib 
+Requires: gazebo_dev roslib
