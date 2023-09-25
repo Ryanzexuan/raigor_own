@@ -13,7 +13,9 @@ import sys
 import shutil
 import errno
 import timeit
-
+import rospy
+from nav_msgs.msg import Odometry
+from geometry_msgs.msg import Twist
 from mobile_robot_model import MobileRobotModel
 from acados_template import AcadosOcp, AcadosOcpSolver, AcadosSimSolver
 
@@ -114,6 +116,10 @@ class MobileRobotOptimizer(object):
         self.integrator = AcadosSimSolver(ocp, json_file=json_file)
 
     def simulation(self, x0, xs):
+        # init subs
+        subs = MySubscriber()
+        rospy.Subscriber("/track_velocity_controller/odom", Odometry, subs.callbackx)
+        # print(subs.data)
         # not very understand of self.solver.set
         simX = np.zeros((self.N+1, self.nx)) # nx is the dimension of state  N is the numble of sim points
         simU = np.zeros((self.N, self.nu)) # nu is the dimension of controls
@@ -121,13 +127,17 @@ class MobileRobotOptimizer(object):
         simX[0, :] = x0.reshape(1, -1) # let initial points be the first row of simX
         xs_between = np.concatenate((xs, np.zeros(2))) # xs should be the final target for the car [2,2,0,0,0]
         time_record = np.zeros(self.N)
-
+    
+    
         # closed loop
         self.solver.set(self.N, 'yref', xs)
         for i in range(self.N):
             self.solver.set(i, 'yref', xs_between)
+            print(xs_between)
+
 
         for i in range(self.N):
+            
             # solve ocp
             start = timeit.default_timer()
             ##  set inertial (stage 0)
@@ -140,7 +150,11 @@ class MobileRobotOptimizer(object):
                 raise Exception('acados acados_ocp_solver returned status {}. Exiting.'.format(status))
 
             simU[i, :] = self.solver.get(0, 'u')
-            write(simU[i, :],'solver_u.txt')
+            ''' ros part'''
+            ros_send(simU[i,:])
+            
+            # write(simU[i, :],'solver_u.txt')
+            
             time_record[i] =  timeit.default_timer() - start
             # simulate system
             self.integrator.set('x', x_current)
@@ -152,22 +166,77 @@ class MobileRobotOptimizer(object):
 
             # update
             x_current = self.integrator.get('x')
+            # print("data type:",type(x_current))
+            ''' ros part'''
+            # rospy.loginfo("get x")
+            x_current = subs.data
+            print(x_current)
+            # write(x_current,'states.txt')
+
+
+
             simX[i+1, :] = x_current
             # write(x_current,'integrator_x.txt')
 
-        print("average estimation time is {}".format(time_record.mean()))
-        print("max estimation time is {}".format(time_record.max()))
-        print("min estimation time is {}".format(time_record.min()))
-        # Draw_MPC_point_stabilization_v1(rob_diam=0.3, init_state=x0, target_state=xs, robot_states=simX, )
+        # print("average estimation time is {}".format(time_record.mean()))
+        # print("max estimation time is {}".format(time_record.max()))
+        # print("min estimation time is {}".format(time_record.min()))
+        Draw_MPC_point_stabilization_v1(rob_diam=0.3, init_state=x0, target_state=xs, robot_states=simX, )
 
 def write(data, filename):
     with open(filename,'a') as file:
         file.write(f"{data}\n")
 
+## To do ROS
+class MySubscriber:
+    def __init__(self):
+        self.data = None
+        self.data_list = None
+    
+    def callbackx(self,data):
+        pos = data.pose.pose.position
+        orientation = data.pose.pose.orientation
+        # linear_vel = data.twist.twist.linear
+        # angular_vel = data.twist.twist.angular
+        # print("Position (x, y): {:.4f}, {:.4f}".format(pos.x, pos.y))
+        self.data_list = [pos.x, pos.y, orientation.z]
+        self.data = np.array(self.data_list)
 
+
+
+def ros_send(data):
+    rospy.init_node('sqp_robo',anonymous=True)
+    # rospy.loginfo("start to send")
+    
+    rate = rospy.Rate(35)  # 10Hz
+
+    vel_cmd = rospy.Publisher('/cmd_vel', Twist, queue_size=10)
+    
+    vel = data[0]
+    ang = data[1]
+
+    msg = Twist()
+    msg.linear.x = vel
+    msg.angular.z = ang
+    # print(msg.linear.x)
+    # print(msg.angular.z)
+    # start_time = rospy.Time.now().to_sec()
+    # while (rospy.Time.now().to_sec() - start_time) < 2:
+    #     vel_cmd.publish(msg)
+    #     rate.sleep()
+    
+    vel_cmd.publish(msg)
+    rate.sleep()
+    # if vel_cmd.publish(msg):
+    #     rospy.loginfo("Message published successfully.")
+    # else:
+    #     rospy.logerr("Failed to publish message.")
+    
+    # rate.sleep()
+    # rospy.spin()
 
 if __name__ == '__main__':
     mobile_robot_model = MobileRobotModel()
     opt = MobileRobotOptimizer(m_model=mobile_robot_model.model,
-                               m_constraint=mobile_robot_model.constraint, t_horizon=20, n_nodes=100)
-    opt.simulation(x0=np.array([1, 0, 0]), xs=np.array([2., 1., 0.5*np.pi]))
+                               m_constraint=mobile_robot_model.constraint, t_horizon=100, n_nodes=200)
+    opt.simulation(x0=np.array([0, 0, 0]), xs=np.array([6., 7., 0.5*np.pi]))

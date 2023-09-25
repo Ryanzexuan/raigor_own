@@ -29,7 +29,9 @@
             joint: push_plate_joint
             pid: {p: 1000.0, i: 0.01, d: 10.0}
     </rosparam>
-
+    <param name="/robot_initial_position/x" type="double" value="0.0"/>
+    <param name="/robot_initial_position/y" type="double" value="0.0"/>
+    <param name="/robot_initial_position/z" type="double" value="0.0"/>
     <!-- Load the URDF into the ROS Parameter Server -->
     <arg name="model" default="$(find xacro)/xacro  '$(find raigor_description)/urdf/xacro/main.xacro'" />
     <param name="robot_description" command="$(arg model)" />
